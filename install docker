@@ -1,0 +1,100 @@
+本文将介绍在ubuntu16.04系统下安装和升级docker、docker-nvidia、docker-caffe-ssd。
+docker：有两个版本:docker-ce(社区版)和docker-ee(企业版)。
+        笔者这里介绍安装或升级的是最新版docker-ce(社区版)。
+        参考官网地址：https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/#os-requirements 
+一、docker安装
+1.卸载旧版本docker
+全新安装时，无需执行该步骤
+sudo apt-get remove docker docker-engine docker.io
+2.更新系统软件
+sudo apt-get update
+3.安装依赖包
+sudo apt-get install \ apt-transport-https \ ca-certificates \ curl \ software-properties-common
+4，添加密钥
+执行该命令时，如遇到长时间没有响应说明网络连接不到docker网站，需要使用代-理进行。
+国内源:
+curl -fsSL https://mirrors.ustc.edu.cn/docker-ce/linux/ubuntu/gpg | sudo apt-key add -
+官方源：
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+显示OK,表示添加成功.
+5.添加仓库
+国内源:
+sudo add-apt-repository \
+"deb [arch=amd64] https://mirrors.ustc.edu.cn/docker-ce/linux/ubuntu \
+$(lsb_release -cs) \
+stable"
+官方源：
+sudo add-apt-repository \
+"deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+$(lsb_release -cs) \
+stable"
+6.再次更新软件
+经实践，这一步不能够省略，我们需要再次把软件更新到最新，否则下一步有可能会报错。
+sudo apt-get update
+7.安装docker
+如果想指定安装某一版本，可使用 sudo apt-get install docker-ce=<VERSION>  命令，把<VERSION>替换为具体版本即可。
+以下命令没有指定版本，默认就会安装最新版
+sudo apt-get install docker-ce
+9.查看docker版本
+docker -v
+显示“Docker version 17.09.0-ce, build afdb6d4”字样，表示安装成功。
+8.启动docker
+sudo systemctl enable docker
+sudo systemctl start docker
+9.系统设置
+创建用户组
+sudo groupadd docker
+添加用户进入docker组，以便该用户可以使用docker
+sudo gpasswd -a ${USER} docker
+重启服务
+sudo service docker restart
+如果设置完成，万一还是需要sudo才能执行docker命令，则执行如下命令
+newgrp - docker
+sudo usermod -aG docker your_usernames
+二、nvidia-docker安装
+1.添加源
+curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | \
+  sudo apt-key add -
+curl -s -L https://nvidia.github.io/nvidia-docker/ubuntu16.04/amd64/nvidia-docker.list | \
+  sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+sudo apt-get update
+2.安装nvidia-docker2软件包并重新加载Docker守护程序配置：
+sudo apt-get install nvidia-docker2
+sudo pkill -SIGHUP dockerd
+安装完成后，当需要使用gpu时，使用nvidia-docker代替docker
+三. 基于docker安装caffe-ssd
+在caffe-ssd官网上已经提供了创建caffe-ssd镜像所需的Dockerfile，并且在docker hub上也能找到：https://hub.docker.com/r/linkernetworks/caffe-ssd。 
+1.拉取caffe-ssd镜像
+nvidia-docker pull linkernetworks/caffe-ssd:1.0-gpu
+2.docker build
+docker build 命令用于使用 Dockerfile 创建镜像。
+使用当前目录的 Dockerfile 创建镜像，标签为 runoob/ubuntu:v1。
+docker build -t runoob/ubuntu:v1 .
+使用URL github.com/creack/docker-firefox  的 Dockerfile 创建镜像。
+docker build github.com/creack/docker-firefox
+也可以通过 -f Dockerfile 文件的位置：
+docker build -f /path/to/a/Dockerfile .
+在 Docker 守护进程执行 Dockerfile 中的指令前，首先会对 Dockerfile 进行语法检查，有语法错误时会返回：
+docker build -t test/myapp .
+3.在交互模式下通过镜像运行caffe-ssd容器
+sudo nvidia-docker run -it -v /home/sh-ws-host/DockerData:/DockerData linkernetworks/caffe-ssd:1.0-gpu /bin/bash
+4.退出容器
+   快捷键：ctrl+d
+‘docker stop 1082d262dda0’
+5.重新进入容器
+sudo nvidia-docker start -i f26a0903913e
+6.docker commit
+docker commit c5f24e953610 mycaffe
+7.查看docker容器
+docker ps -a
+7.查看正在运行的docker容器
+docker ps
+8.查看本地所有镜像
+docker images
+9.docker删除
+删除容器
+docker rm container_ID/name
+删除所有已经停止的容器
+docker rm $(docker ps -a -q)
+删除指定镜像
+docker rmi image_name
