@@ -11,6 +11,17 @@ import caffe
 #    print("Usage: %s det_net det_model gpu_id image_list conf_thres" % sys.argv[0])
 #    sys.exit()
 
+
+
+#det_net = sys.argv[1]
+#det_model = sys.argv[2]
+#gpu_id = int(sys.argv[3])
+#image_list = sys.argv[4]
+#conf_thres = float(sys.argv[5])
+
+
+
+
 det_net ="./example/deploy.prototxt"
 det_model = "mobilenet_iter_73000.caffemodel"
 gpu_id = 0
