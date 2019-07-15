@@ -1,0 +1,2 @@
+python gen.py -s deploy -d train_lmdb -l labelmap.prototxt --size 0.25 -c 2 >> deploy.prototxt
+
